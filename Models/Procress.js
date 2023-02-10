@@ -27,7 +27,7 @@ const Procress = sequelize.define(
       defaultValue: "",
     },
     quality: {
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING(255),
       defaultValue: "",
     },
     percent: {

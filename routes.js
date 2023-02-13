@@ -10,6 +10,7 @@ router.route("/server/create").get(Control.Server.Create);
 //download
 router.route("/start").get(Control.DL.Start);
 router.route("/cancle").get(Control.DL.Cancle);
+router.route("/download").get(Control.DL.Download);
 
 router.all("*", async (req, res) => {
   res.status(500).end();

@@ -5,5 +5,6 @@ module.exports = {
   DL: {
     Start: require("./dl.start"),
     Cancle: require("./dl.cancle"),
+    Download: require("./dl.download"),
   },
 };

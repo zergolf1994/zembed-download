@@ -115,22 +115,41 @@ exports.Storage = ({ file, save, row, dir, sv_storage }) => {
           )
           .then(async (response) => {
             let storage_data = {
-              storageId: sv_storage?.id,
               quality: "default",
               fileId: row?.id,
             };
-            await Files.Videos.create(storage_data);
+            let storage_where = {
+              storageId: sv_storage?.id,
+            };
+            let video = await Files.Videos.findOne({
+              raw: true,
+              where: {
+                ...storage_data,
+              },
+            });
+            if (video) {
+              console.log("has", storage_data);
+              await Files.Videos.update(storage_where, {
+                where: {
+                  ...storage_data,
+                },
+              });
+            } else {
+              await Files.Videos.create({ ...storage_data, ...storage_where });
+            }
 
             await Files.Lists.update(
-              { s_video: 1 },
+              { e_code: 0, s_video: 1 },
               { where: { id: row?.id } }
             );
             console.log("Transfer Storage", uploadTo);
             client.close(); // remember to close connection after you finish
+            resolve();
           })
           .catch((error) => {
             client.close();
             console.log("error", error);
+            reject();
           });
       })
       .catch((e) => console.log(e));

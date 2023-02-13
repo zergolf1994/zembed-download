@@ -28,6 +28,8 @@ module.exports = async (req, res) => {
         slug,
         type: { [Op.or]: ["gdrive", "direct"] },
         e_code: 0,
+        s_video: 0,
+        s_backup: 0,
       },
     });
     if (!row) return res.json(Alert({ status: false, msg: "not_exists" }, `w`));

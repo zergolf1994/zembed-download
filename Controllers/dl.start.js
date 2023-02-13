@@ -2,6 +2,7 @@
 
 const { Files, Servers, Procress } = require(`../Models`);
 const { Alert, CheckDisk, GetIP } = require(`../Utils`);
+const { Sequelize, Op } = require("sequelize");
 
 module.exports = async (req, res) => {
   try {
@@ -19,13 +20,13 @@ module.exports = async (req, res) => {
     });
 
     if (!server)
-      return res.json(Alert({ status: false, msg: "server๘busy" }, `w`));
+      return res.json(Alert({ status: false, msg: "server_busy" }, `w`));
 
     let row = await Files.Lists.findOne({
       raw: true,
       where: {
         slug,
-        type: "gdrive",
+        type: { [Op.or]: ["gdrive", "direct"] },
         e_code: 0,
       },
     });

@@ -21,5 +21,6 @@ module.exports = {
     Storage: require("./_Get_Storage"),
   },
   CheckDisk: require("./_Check_Disk"),
-  GetIP: require("./GetIP"),
+  TimeSleep: require("./_TimeSleep"),
+  GetIP: require("./_Get_IP"),
 };

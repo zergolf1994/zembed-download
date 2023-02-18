@@ -2,6 +2,7 @@
 const path = require("path");
 const fs = require("fs-extra");
 const shell = require("shelljs");
+const request = require("request");
 const { Client } = require("node-scp");
 
 const { Files, Servers, Storages, Process } = require(`../Models`);
@@ -205,6 +206,14 @@ function RemoteToStorage({ file, save, row, dir, sv_storage }) {
             await Files.Lists.update(
               { e_code: 0, s_video: 1 },
               { where: { id: row?.id } }
+            );
+            // check disk
+
+            request(
+              { url: `http://${sv_storage?.sv_ip}/check-disk` },
+              function (error, response, body) {
+                console.log("check_disk", sv_storage?.sv_ip);
+              }
             );
             client.close();
             resolve(true);

@@ -60,14 +60,15 @@ module.exports = async (req, res) => {
           silent: true,
         }
       );
+      console.log(`start ${slug} done`);
       shell.exec(
         `curl --write-out '%{http_code} download ${slug} done' --silent --output /dev/null "http://127.0.0.1/download?slug=${slug}" &&
         sleep 2 &&
         curl --write-out '%{http_code} remote ${slug} done' --silent --output /dev/null "http://127.0.0.1/remote?slug=${slug}"
         sleep 2 &&
-        curl --write-out '%{http_code} remote ${slug} done' --silent --output /dev/null "http://${sets?.domain_api_admin}/cron/disk-used"
+        curl --write-out '%{http_code} disk-used done' --silent --output /dev/null "http://${sets?.domain_api_admin}/cron/disk-used"
         sleep 2 &&
-        curl --write-out '%{http_code} remote ${slug} done' --silent --output /dev/null "http://${sets?.domain_api_admin}/cron/download"
+        curl --write-out '%{http_code} cron download' --silent --output /dev/null "http://${sets?.domain_api_admin}/cron/download"
         `,
         { async: false, silent: false },
         function (data) {}

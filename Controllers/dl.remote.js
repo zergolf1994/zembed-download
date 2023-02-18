@@ -58,7 +58,7 @@ module.exports = async (req, res) => {
       let { width, height, duration, codec_name } = video_data?.streams[0];
       file_update.duration = duration?.toFixed(0) || 0;
       file_update.size = size;
-      
+
       await Files.Lists.update(file_update, {
         where: { id: row?.id },
       });
@@ -173,6 +173,7 @@ function RemoteToStorage({ file, save, row, dir, sv_storage }) {
           .uploadFile(file, uploadTo)
           .then(async (response) => {
             let file_data = {
+              active: 1,
               type: "video",
               name: "default",
               value: save,

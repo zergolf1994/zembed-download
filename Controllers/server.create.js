@@ -1,7 +1,7 @@
 "use strict";
 
 const { Servers } = require(`../Models`);
-const { Alert, CheckDisk } = require(`../Utils`);
+const { CheckDisk } = require(`../Utils`);
 
 module.exports = async (req, res) => {
   const { sv_ip, sv_name } = req.query;
@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
       raw: true,
       where: { sv_ip },
     });
-    if (row) return res.json(Alert({ status: false, msg: "exists" }, `w`));
+    if (row) return res.json({ status: false, msg: "exists" });
     let disk = await CheckDisk();
     let data = {
       sv_name,
@@ -25,12 +25,12 @@ module.exports = async (req, res) => {
     let db_create = await Servers.Lists.create(data);
 
     if (db_create?.id) {
-      return res.json(Alert({ status: true, msg: `created` }, `s`));
+      return res.json({ status: true, msg: `created` });
     } else {
-      return res.json(Alert({ status: false, msg: `db_err` }, `d`));
+      return res.json({ status: false, msg: `db_err` });
     }
   } catch (error) {
     console.log(error);
-    return res.json(Alert({ status: false, msg: error.name }, `d`));
+    return res.json({ status: false, msg: error.name });
   }
 };

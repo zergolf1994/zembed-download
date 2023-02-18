@@ -2,9 +2,9 @@ module.exports = {
   Server: {
     Create: require("./server.create"),
   },
-  DL: {
+  /*DL: {
     Start: require("./dl.start"),
     Cancle: require("./dl.cancle"),
     Download: require("./dl.download"),
-  },
+  },*/
 };

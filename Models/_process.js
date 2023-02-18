@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("./conn");
 
-const Procress = sequelize.define(
-  "procress",
+const Process = sequelize.define(
+  "process",
   {
     id: {
       type: DataTypes.INTEGER(11),
@@ -72,7 +72,7 @@ const Procress = sequelize.define(
 );
 
 (async () => {
-  await Procress.sync({ force: false });
+  await Process.sync({ force: false });
 })();
 
-module.exports = Procress;
+module.exports = Process;

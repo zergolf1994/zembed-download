@@ -1,16 +1,18 @@
 "use strict";
 
 const { Files, Servers, Process } = require(`../Models`);
-const { GetIP } = require(`../Utils`);
+const { GetIP , getSets } = require(`../Utils`);
 const { Sequelize, Op } = require("sequelize");
 const shell = require("shelljs");
 
 module.exports = async (req, res) => {
   try {
     const { slug } = req.query;
-
+    
     if (!slug) return res.json({ status: false });
     const sv_ip = await GetIP();
+    let sets = await getSets();
+
     let server = await Servers.Lists.findOne({
       raw: true,
       where: {
@@ -63,6 +65,8 @@ module.exports = async (req, res) => {
         `curl --write-out '%{http_code} download ${slug} done' --silent --output /dev/null "http://127.0.0.1/download?slug=${slug}" &&
         sleep 2 &&
         curl --write-out '%{http_code} remote ${slug} done' --silent --output /dev/null "http://127.0.0.1/remote?slug=${slug}"
+        sleep 2 &&
+        curl --write-out '%{http_code} remote ${slug} done' --silent --output /dev/null "http://${sets?.domain_api_admin}/cron/download"
         `,
         { async: false, silent: false },
         function (data) {}

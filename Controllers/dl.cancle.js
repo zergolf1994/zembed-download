@@ -1,8 +1,7 @@
 "use strict";
 
-const { Files, Servers, Procress } = require(`../Models`);
-const { Alert, CheckDisk, GetIP } = require(`../Utils`);
-const { Sequelize, Op } = require("sequelize");
+const { Files, Servers, Process } = require(`../Models`);
+const shell = require("shelljs");
 
 module.exports = async (req, res) => {
   try {
@@ -16,9 +15,9 @@ module.exports = async (req, res) => {
         slug,
       },
     });
-    if (!row) return res.json(Alert({ status: false, msg: "not_exists" }, `w`));
+    if (!row) return res.json({ status: false, msg: "not_exists" });
 
-    let process = await Procress.findOne({
+    let pc = await Process.findOne({
       raw: true,
       where: {
         fileId: row?.id,
@@ -26,13 +25,12 @@ module.exports = async (req, res) => {
       },
     });
 
-    if (!process)
-      return res.json(Alert({ status: false, msg: "not_exists" }, `w`));
+    if (!pc) return res.json({ status: false, msg: "not_exists" });
 
     await Servers.Lists.update(
-      { status: 0 },
+      { work: 0 },
       {
-        where: { id: process.serverId },
+        where: { id: pc.serverId },
         silent: true,
       }
     );
@@ -40,20 +38,25 @@ module.exports = async (req, res) => {
     await Files.Lists.update(
       { e_code: 0 },
       {
-        where: { id: process.fileId },
+        where: { id: pc.fileId },
         silent: true,
       }
     );
 
-    let db_delete = await Procress.destroy({ where: { id: process.id } });
+    let db_delete = await Process.destroy({ where: { id: pc.id } });
 
     if (db_delete) {
-      return res.json(Alert({ status: true, msg: `canceled` }, `s`));
+      shell.exec(
+        `sudo rm -rf ${global.dirPublic}${slug}`,
+        { async: false, silent: false },
+        function (data) {}
+      );
+      return res.json({ status: true, msg: `canceled` });
     } else {
-      return res.json(Alert({ status: false, msg: `db_err` }, `d`));
+      return res.json({ status: false, msg: `db_err` });
     }
   } catch (error) {
     console.log(error);
-    return res.json(Alert({ status: false, msg: error.name }, `d`));
+    return res.json({ status: false, msg: error.name });
   }
 };

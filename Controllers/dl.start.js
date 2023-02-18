@@ -1,7 +1,7 @@
 "use strict";
 
-const { Files, Servers, Procress } = require(`../Models`);
-const { Alert, CheckDisk, GetIP } = require(`../Utils`);
+const { Files, Servers, Process } = require(`../Models`);
+const { GetIP } = require(`../Utils`);
 const { Sequelize, Op } = require("sequelize");
 
 module.exports = async (req, res) => {
@@ -15,32 +15,33 @@ module.exports = async (req, res) => {
       where: {
         sv_ip,
         active: 1,
-        status: 0,
+        work: 0,
       },
     });
 
     if (!server)
-      return res.json(Alert({ status: false, msg: "server_busy" }, `w`));
+      return res.json({ status: false, msg: "server_busy" });
 
     let row = await Files.Lists.findOne({
       raw: true,
       where: {
         slug,
-        type: { [Op.or]: ["gdrive", "direct"] },
+        type: { [Op.or]: ["gdrive", "linkmp4"] },
         e_code: 0,
         s_video: 0,
         s_backup: 0,
       },
     });
-    if (!row) return res.json(Alert({ status: false, msg: "not_exists" }, `w`));
+    if (!row) return res.json({ status: false, msg: "not_exists" });
 
     let data = {
-      userId: row?.uid,
+      userId: row?.userId,
       serverId: server?.id,
       fileId: row?.id,
       type: "download",
+      quality: "default",
     };
-    let db_create = await Procress.create(data);
+    let db_create = await Process.create(data);
 
     if (db_create?.id) {
       await Files.Lists.update(
@@ -51,18 +52,18 @@ module.exports = async (req, res) => {
         }
       );
       await Servers.Lists.update(
-        { status: 1 },
+        { work: 1 },
         {
           where: { id: data.serverId },
           silent: true,
         }
       );
-      return res.json(Alert({ status: true, msg: `created` }, `s`));
+      return res.json({ status: true, msg: `created` });
     } else {
-      return res.json(Alert({ status: false, msg: `db_err` }, `d`));
+      return res.json({ status: false, msg: `db_err` });
     }
   } catch (error) {
     console.log(error);
-    return res.json(Alert({ status: false, msg: error.name }, `d`));
+    return res.json({ status: false, msg: error.name });
   }
 };

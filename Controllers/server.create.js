@@ -1,12 +1,14 @@
 "use strict";
 
 const { Servers } = require(`../Models`);
-const { CheckDisk } = require(`../Utils`);
+const { CheckDisk, GetIP, GetHN } = require(`../Utils`);
 
 module.exports = async (req, res) => {
-  const { sv_ip, sv_name } = req.query;
+  //const { sv_ip, sv_name } = req.query;
 
   try {
+    const sv_ip = await GetIP();
+    const sv_name = await GetHN();
     if (!sv_ip) return res.json({ status: false });
 
     let row = await Servers.Lists.findOne({

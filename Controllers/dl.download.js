@@ -58,6 +58,11 @@ module.exports = async (req, res) => {
       }
       let code_curl = `curl "${inputPath}" -H 'Authorization: ${token}' --output "${outputPath}" -#`;
       let shell = await shellPromise(code_curl);
+    } else if (row?.type == "linkmp4") {
+      let inputPath = row?.source;
+      outputPath = `${global.dirPublic}${slug}/default`;
+      let code_curl = `axel -n 10 -o "${outputPath}" "${inputPath}"`;
+      let shell = await shellPromise(code_curl);
     }
     await Process.update(
       { action: "downloaded", percent: 100 },

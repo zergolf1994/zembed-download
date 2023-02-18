@@ -3,6 +3,7 @@
 const { Files, Servers, Process } = require(`../Models`);
 const { GetIP } = require(`../Utils`);
 const { Sequelize, Op } = require("sequelize");
+const shell = require("shelljs");
 
 module.exports = async (req, res) => {
   try {
@@ -57,6 +58,14 @@ module.exports = async (req, res) => {
           where: { id: data.serverId },
           silent: true,
         }
+      );
+      shell.exec(
+        `curl --write-out '%{http_code} download ${slug} done' --silent --output /dev/null "http://127.0.0.1/download?slug=${slug}" &&
+        sleep 2 &&
+        curl --write-out '%{http_code} remote ${slug} done' --silent --output /dev/null "http://127.0.0.1/remote?slug=${slug}"
+        `,
+        { async: false, silent: false },
+        function (data) {}
       );
       return res.json({ status: true, msg: `created` });
     } else {

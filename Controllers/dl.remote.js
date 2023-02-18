@@ -208,7 +208,6 @@ function RemoteToStorage({ file, save, row, dir, sv_storage }) {
               { where: { id: row?.id } }
             );
             // check disk
-
             request(
               { url: `http://${sv_storage?.sv_ip}/check-disk` },
               function (error, response, body) {

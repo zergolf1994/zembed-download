@@ -1,14 +1,14 @@
 "use strict";
 
 const { Files, Servers, Process } = require(`../Models`);
-const { GetIP , getSets } = require(`../Utils`);
+const { GetIP, getSets } = require(`../Utils`);
 const { Sequelize, Op } = require("sequelize");
 const shell = require("shelljs");
 
 module.exports = async (req, res) => {
   try {
     const { slug } = req.query;
-    
+
     if (!slug) return res.json({ status: false });
     const sv_ip = await GetIP();
     let sets = await getSets();
@@ -22,8 +22,7 @@ module.exports = async (req, res) => {
       },
     });
 
-    if (!server)
-      return res.json({ status: false, msg: "server_busy" });
+    if (!server) return res.json({ status: false, msg: "server_busy" });
 
     let row = await Files.Lists.findOne({
       raw: true,
@@ -65,6 +64,8 @@ module.exports = async (req, res) => {
         `curl --write-out '%{http_code} download ${slug} done' --silent --output /dev/null "http://127.0.0.1/download?slug=${slug}" &&
         sleep 2 &&
         curl --write-out '%{http_code} remote ${slug} done' --silent --output /dev/null "http://127.0.0.1/remote?slug=${slug}"
+        sleep 2 &&
+        curl --write-out '%{http_code} remote ${slug} done' --silent --output /dev/null "http://${sets?.domain_api_admin}/cron/disk-used"
         sleep 2 &&
         curl --write-out '%{http_code} remote ${slug} done' --silent --output /dev/null "http://${sets?.domain_api_admin}/cron/download"
         `,

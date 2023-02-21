@@ -215,6 +215,14 @@ function RemoteToStorage({ file, save, row, dir, sv_storage }) {
                 console.log("cron-check", sv_storage?.sv_ip);
               }
             );
+            
+            // disk-used
+            request(
+              { url: `http://${sets?.domain_api_admin}/cron/disk-used` },
+              function (error, response, body) {
+                console.log("cron-thumbs", sets?.domain_api_admin);
+              }
+            );
 
             // thumbs
             request(

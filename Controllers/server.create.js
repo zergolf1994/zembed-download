@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
     let data = {
       sv_name,
       sv_ip,
-      type: "download-quality",
+      type: "download",
       active: 0,
       ...disk,
     };

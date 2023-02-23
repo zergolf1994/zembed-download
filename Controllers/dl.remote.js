@@ -55,7 +55,7 @@ module.exports = async (req, res) => {
       ext = "webm";
     }
 
-    if (ext == "mp4" || ext == "ts") {
+    if (ext == "mp4" && (!row?.size || !row?.duration)) {
       let { width, height, duration, codec_name } = video_data?.streams[0];
       file_update.duration = duration?.toFixed(0) || 0;
       file_update.size = size;
@@ -215,7 +215,7 @@ function RemoteToStorage({ file, save, row, dir, sv_storage }) {
                 console.log("cron-check", sv_storage?.sv_ip);
               }
             );
-            
+
             // disk-used
             request(
               { url: `http://${sets?.domain_api_admin}/cron/disk-used` },

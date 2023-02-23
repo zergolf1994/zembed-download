@@ -1,12 +1,12 @@
 {
-  "name": "s_download",
+  "name": "s_download_quality",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
-    "pm2": "pm2 start cluster.js --name=s_download"
+    "pm2": "pm2 start cluster.js --name=s_download_quality"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

@@ -31,7 +31,6 @@ module.exports = async (req, res) => {
         type: { [Op.or]: ["gdrive", "linkmp4"] },
         e_code: 0,
         s_video: 0,
-        s_backup: 0,
       },
     });
     if (!row) return res.json({ status: false, msg: "not_exists" });
@@ -41,7 +40,6 @@ module.exports = async (req, res) => {
       serverId: server?.id,
       fileId: row?.id,
       type: "download",
-      quality: "default",
     };
     let db_create = await Process.create(data);
 
@@ -61,17 +59,11 @@ module.exports = async (req, res) => {
         }
       );
       console.log(`start ${slug} done`);
-      shell.exec(
-        `curl --write-out '%{http_code} download ${slug} done' --silent --output /dev/null "http://127.0.0.1/download?slug=${slug}" &&
-        sleep 2 &&
-        curl --write-out '%{http_code} remote ${slug} done' --silent --output /dev/null "http://127.0.0.1/remote?slug=${slug}"
-        sleep 2 &&
-        curl --write-out '%{http_code} cron download' --silent --output /dev/null "http://${sets?.domain_api_admin}/cron/download"
-        `,
+      shell.exec(`sudo bash ${global.dir}/shell/download.sh ${slug}`,
         { async: false, silent: false },
         function (data) {}
       );
-      return res.json({ status: true, msg: `created` });
+      return res.json({ status: true, msg: `start` , slug });
     } else {
       return res.json({ status: false, msg: `db_err` });
     }

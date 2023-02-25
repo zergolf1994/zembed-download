@@ -166,3 +166,30 @@ exports.Source = async (file) => {
     return;
   }
 };
+exports.Info = async (file) => {
+  try {
+    if (!file) return;
+    const data = {};
+    const url = `https://www.googleapis.com/drive/v2/files/${file?.source}`;
+    let headers = {},
+      proxy;
+
+    let token = await this.GRand({ userId: file?.userId });
+
+    if (token) {
+      headers.Authorization = `${token?.token_type} ${token?.access_token}`;
+    }
+    /*if (process.env.PROXY) {
+      proxy = `${process.env.PROXY}`;
+    }
+    console.log({ url, proxy, headers })*/
+    return new Promise(function (resolve, reject) {
+      request({ url, headers }, function (error, response, body) {
+        resolve(JSON.parse(body));
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    return;
+  }
+};

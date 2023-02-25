@@ -14,4 +14,5 @@ module.exports = {
   Search: require("./_Search"),
   TimeSleep: require("./_TimeSleep"),
   VideoData: require("./__VideoData"),
+  GetUser: require("./_Get_User"),
 };

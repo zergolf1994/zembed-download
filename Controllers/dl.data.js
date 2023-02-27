@@ -1,14 +1,17 @@
 "use strict";
 const fs = require("fs-extra");
+const request = require("request");
+
 const { Files, Servers, Process } = require(`../Models`);
 const { Sequelize, Op } = require("sequelize");
-const { Google, GetUser } = require(`../Utils`);
-const { where } = require("../Models/conn");
+const { Google, GetUser, getSets } = require(`../Utils`);
 
 module.exports = async (req, res) => {
   try {
     const { slug } = req.query;
     if (!slug) return res.json({ status: "false" });
+    let Sets = await getSets();
+
     let row = await Files.Lists.findOne({
       raw: true,
       where: {
@@ -39,6 +42,39 @@ module.exports = async (req, res) => {
       //check_default
       let gInfo = await Google.Info(row);
       //output.gInfo = gInfo;
+      if (gInfo?.error) {
+        let gSource = await Google.Source(row);
+        if (gSource?.error_code) {
+          let e_code = gSource?.error_code || 333;
+          return res.json({
+            status: "false",
+            msg: "video_error",
+            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+            e_code,
+          });
+        } else {
+          return res.json({
+            status: "false",
+            msg: "video_cancle",
+            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+          });
+        }
+      }
+
+      if (row?.duration == 0 || row?.size == 0) {
+        let data_update_files = {};
+        if (gInfo?.fileSize) {
+          data_update_files.size = gInfo?.fileSize;
+        }
+        if (gInfo?.videoMediaMetadata?.durationMillis) {
+          data_update_files.duration = Math.floor(
+            gInfo?.videoMediaMetadata?.durationMillis / 1000
+          );
+        }
+        await Files.Lists.update(data_update_files, {
+          where: { id: row?.id },
+        });
+      }
 
       if (gInfo?.videoMediaMetadata) {
         let quality_allow = [];
@@ -184,6 +220,7 @@ module.exports = async (req, res) => {
 
     return res.json({ ...output });
   } catch (error) {
-    return res.json({ status: "false" });
+    console.log(error);
+    return res.json({ status: "false", msg: "error" });
   }
 };

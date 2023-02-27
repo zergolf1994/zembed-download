@@ -7,6 +7,7 @@ module.exports = {
     RunTask: require("./dl.run"),
     Start: require("./dl.start"),
     Cancle: require("./dl.cancle"),
+    Error: require("./dl.error"),
     Download: require("./dl.download"),
     Remote: require("./dl.remote"),
     RemoteQuality: require("./dl.quality-remote"),

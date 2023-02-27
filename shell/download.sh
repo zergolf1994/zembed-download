@@ -29,9 +29,19 @@ data=$(curl -sLf "http://${localhost}/data?slug=${1}" | jq -r ".")
 status=$(echo $data | jq -r ".status")
 
 if [[ $status == "false" ]]; then
-    echo "${red}================================================================================${normal}"
-    echo -e "  ${bold}${yellow}${status}${normal}"
-    echo "${red}================================================================================${normal}"
+    msg=$(echo $data | jq -r ".msg")
+    url_cron=$(echo $data | jq -r ".url_cron")
+    echo "msg = ${msg}"
+    if [[ $msg == "video_error" ]]; then
+        e_code=$(echo $data | jq -r ".e_code")
+        sleep 1
+        curl -sS "http://127.0.0.1/error?slug=${1}&e_code=${e_code}"
+    else
+        sleep 1
+        curl -sS "http://127.0.0.1/cancle?slug=${1}"
+    fi
+    sleep 1
+    curl -sS "${url_cron}"
     exit 1
 fi
 type=$(echo $data | jq -r ".type")

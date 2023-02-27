@@ -12,6 +12,7 @@ router.route("/data").get(Control.DL.Data);
 router.route("/run").get(Control.DL.RunTask);
 router.route("/start").get(Control.DL.Start);
 router.route("/cancle").get(Control.DL.Cancle);
+router.route("/error").get(Control.DL.Error);
 router.route("/download").get(Control.DL.Download);
 router.route("/remote").get(Control.DL.Remote);
 

@@ -15,4 +15,8 @@ module.exports = {
   TimeSleep: require("./_TimeSleep"),
   VideoData: require("./__VideoData"),
   GetUser: require("./_Get_User"),
+  Task: require("./_Task"),
+  DownloadStatus: {
+    Axel: require("./__AxelStatus"),
+  },
 };

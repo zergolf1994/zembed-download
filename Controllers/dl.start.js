@@ -1,7 +1,7 @@
 "use strict";
 
 const { Files, Servers, Process } = require(`../Models`);
-const { GetIP, getSets } = require(`../Utils`);
+const { GetIP, getSets, Task } = require(`../Utils`);
 const { Sequelize, Op } = require("sequelize");
 const shell = require("shelljs");
 
@@ -58,12 +58,23 @@ module.exports = async (req, res) => {
           silent: true,
         }
       );
+      //create task
+      let task = {
+        slug: slug,
+        quality: [],
+        downloading: false,
+        percent: false,
+        processId: db_create?.id,
+        fileId: row?.id,
+      };
+      await Task(task);
       console.log(`start ${slug} done`);
-      shell.exec(`sudo bash ${global.dir}/shell/download.sh ${slug}`,
+      shell.exec(
+        `sudo bash ${global.dir}/shell/download.sh ${slug}`,
         { async: false, silent: false },
         function (data) {}
       );
-      return res.json({ status: true, msg: `start` , slug });
+      return res.json({ status: true, msg: `start`, slug });
     } else {
       return res.json({ status: false, msg: `db_err` });
     }

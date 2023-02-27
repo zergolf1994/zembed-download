@@ -15,6 +15,10 @@ router.route("/cancle").get(Control.DL.Cancle);
 router.route("/error").get(Control.DL.Error);
 router.route("/download").get(Control.DL.Download);
 router.route("/remote").get(Control.DL.Remote);
+router.route("/task").get(Control.DL.Task);
+
+router.route("/update/task/downloading").get(Control.UPTASK.Downloading);
+router.route("/update/task/percent").get(Control.UPTASK.Percent);
 
 router.route("/remote-quality").get(Control.DL.RemoteQuality);
 router.route("/success-quality").get(Control.DL.SuccessQuality);

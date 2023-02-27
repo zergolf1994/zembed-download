@@ -12,5 +12,10 @@ module.exports = {
     Remote: require("./dl.remote"),
     RemoteQuality: require("./dl.quality-remote"),
     SuccessQuality: require("./dl.quality-success"),
+    Task: require("./dl.task"),
+  },
+  UPTASK: {
+    Downloading: require("./update.task-downloading"),
+    Percent: require("./update.task-percent"),
   },
 };

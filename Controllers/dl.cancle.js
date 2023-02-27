@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
 
     if (db_delete) {
       shell.exec(
-        `sudo rm -rf ${global.dirPublic}${slug}`,
+        `sudo rm -rf ${global.dirPublic}`,
         { async: false, silent: false },
         function (data) {}
       );

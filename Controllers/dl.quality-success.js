@@ -57,6 +57,14 @@ module.exports = async (req, res) => {
         }
       }
     }
+    let pc_quality = pc?.quality.split(',');
+    let check_done = 0;
+    for (const key in list_video) {
+      let q = list_video[key].name;
+      if (pc_quality.includes(q.toString())) {
+        check_done++;
+      }
+    }
 
     if (list_delete.length) {
       //delete by scp
@@ -67,10 +75,18 @@ module.exports = async (req, res) => {
       });
     }
 
-    await Files.Lists.update(
-      { e_code: 0, s_convert: 1, s_video: 1 },
-      { where: { id: pc?.fileId } }
-    );
+    if(pc_quality.length == check_done){
+      await Files.Lists.update(
+        { e_code: 0, s_convert: 1, s_video: 1 },
+        { where: { id: pc?.fileId } }
+      );
+    }else{
+      await Files.Lists.update(
+        { e_code: 222, s_convert: 0, s_video: 1 },
+        { where: { id: pc?.fileId } }
+      );
+    }
+
     await Servers.Lists.update({ work: 0 }, { where: { id: pc?.serverId } });
     let db_delete = await Process.destroy({ where: { id: pc?.id } });
 
@@ -79,13 +95,6 @@ module.exports = async (req, res) => {
         `sudo rm -rf ${global.dirPublic}`,
         { async: false, silent: false },
         function (data) {}
-      );
-      // thumbs
-      request(
-        { url: `http://${sets?.domain_api_admin}/cron/download` },
-        function (error, response, body) {
-          console.log("download-quality", sets?.domain_api_admin);
-        }
       );
       return res.json({ status: true, msg: `success` });
     } else {

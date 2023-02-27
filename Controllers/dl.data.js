@@ -4,11 +4,13 @@ const request = require("request");
 
 const { Files, Servers, Process } = require(`../Models`);
 const { Sequelize, Op } = require("sequelize");
-const { Google, GetUser, getSets } = require(`../Utils`);
+const { Google, GetUser, getSets, Task } = require(`../Utils`);
 
 module.exports = async (req, res) => {
   try {
     const { slug } = req.query;
+
+    let task = await Task();
     if (!slug) return res.json({ status: "false" });
     let Sets = await getSets();
 
@@ -217,6 +219,8 @@ module.exports = async (req, res) => {
       output.outPutPath = outPutPath;
       output.speed = userSets.download_speed || 20;
     }
+    output.root_dir = global.dir;
+    await Task({ quality: output.quality.join(",").split(",") });
 
     return res.json({ ...output });
   } catch (error) {

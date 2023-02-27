@@ -41,10 +41,14 @@ if [[ $status == "false" ]]; then
         curl -sS "http://127.0.0.1/cancle?slug=${1}"
     fi
     sleep 1
-    curl -sS "${url_cron}"
+    #curl -sS "${url_cron}"
     exit 1
 fi
 type=$(echo $data | jq -r ".type")
+root_dir=$(echo $data | jq -r ".root_dir")
+
+sudo bash ${root_dir}/shell/updatepercent.sh > /dev/null &
+
 if [[ $type == "gdrive_quality_done" ]]; then
     echo "${type} done"
     sleep 2
@@ -73,6 +77,8 @@ if [[ $type == "gdrive_quality" ]]; then
 
         if [ "${cookie}" != "null" ]; then
             echo "download ${qua}"
+            curl -sS "http://${localhost}/update/task/downloading?quality=${qua}"
+            #run check process
             axel -H "Cookie: ${cookie}" -n ${speed} -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
         fi
         sleep 2
@@ -100,6 +106,9 @@ if [[ $type == "gdrive_default" ]]; then
     fi
     
     axel -H "Authorization: ${Authorization}" -n 1 -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
+
+    
+    curl -sS "http://${localhost}/remote?slug=${1}"
     echo "download_${type}_done"
 fi
 

@@ -163,6 +163,8 @@ module.exports = async (req, res) => {
               output.cookie = cookie;
               output.outPutPath = outPutPath;
               output.speed = userSets.download_speed || 20;
+
+              await Task({ quality: quality });
             }
           }
         }
@@ -192,6 +194,8 @@ module.exports = async (req, res) => {
             output.msg = "download_default";
             output.outPutPath = outPutPath;
             output.speed = userSets.download_speed || 20;
+
+            await Task({ quality: ["default"] });
           } else {
             output.msg = "no_token";
           }
@@ -218,9 +222,10 @@ module.exports = async (req, res) => {
       output.msg = "download_link_mp4";
       output.outPutPath = outPutPath;
       output.speed = userSets.download_speed || 20;
+
+      await Task({ quality: ["default"] });
     }
     output.root_dir = global.dir;
-    await Task({ quality: output.quality.join(",").split(",") });
 
     return res.json({ ...output });
   } catch (error) {

@@ -105,9 +105,10 @@ if [[ $type == "gdrive_default" ]]; then
         rm -rf ${DownloadTXT}
     fi
     
+    curl -sS "http://${localhost}/update/task/downloading?quality=default"
+    
     axel -H "Authorization: ${Authorization}" -n 1 -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
 
-    
     curl -sS "http://${localhost}/remote?slug=${1}"
     echo "download_${type}_done"
 fi
@@ -126,6 +127,7 @@ if [[ $type == "link_mp4_default" ]]; then
     if [[ -f "$DownloadTXT" ]]; then
         rm -rf ${DownloadTXT}
     fi
+    curl -sS "http://${localhost}/update/task/downloading?quality=default"
 
     axel -n ${speed} -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
     echo "download_${type}_done"

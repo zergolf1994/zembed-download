@@ -119,6 +119,18 @@ module.exports = async (req, res) => {
 
           //download quality
           let gSource = await Google.Source(row);
+
+          if (gSource?.error_code) {
+            if (gSource?.error_code) {
+              let e_code = gSource?.error_code || 333;
+              return res.json({
+                status: "false",
+                msg: "video_error",
+                url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+                e_code,
+              });
+            }
+          }
           let quality = [],
             vdo = {};
 

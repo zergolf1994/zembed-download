@@ -123,7 +123,7 @@ module.exports = async (req, res) => {
     await Servers.Lists.update({ work: 0 }, { where: { id: pc?.serverId } });
     await Process.destroy({ where: { id: pc?.id } });
     shell.exec(
-      `sudo rm -rf ${global.dirPublic}${row?.slug}`,
+      `sudo rm -rf ${global.dirPublic}`,
       { async: false, silent: false },
       function (data) {}
     );

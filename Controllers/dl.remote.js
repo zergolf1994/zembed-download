@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
 
     if (!pc) return res.json({ status: false, msg: "not_exists" });
 
-    outputPath = `${global.dirPublic}${slug}/default`;
+    outputPath = `${global.dirPublic}${slug}/file_default`;
 
     if (!fs.existsSync(outputPath)) {
       // cancle this video

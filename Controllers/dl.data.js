@@ -1,5 +1,6 @@
 "use strict";
 const fs = require("fs-extra");
+const path = require("path");
 const request = require("request");
 
 const { Files, Servers, Process } = require(`../Models`);
@@ -13,6 +14,8 @@ module.exports = async (req, res) => {
     let task = await Task();
     if (!slug) return res.json({ status: "false" });
     let Sets = await getSets();
+    if (!fs.existsSync(path.join(global.dirPublic, "task.json")))
+      return res.json({ status: false, msg: "no_task" });
 
     let row = await Files.Lists.findOne({
       raw: true,
@@ -154,6 +157,12 @@ module.exports = async (req, res) => {
               .replace('"]', "");
 
             if (!cookie) {
+              return res.json({
+                status: "false",
+                msg: "video_error",
+                url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+                e_code: 336,
+              });
               output.msg = "no_cookie";
             } else {
               await Process.update(
@@ -205,13 +214,26 @@ module.exports = async (req, res) => {
             output.authorization = `${gToken?.token_type} ${gToken?.access_token}`;
             output.msg = "download_default";
             output.outPutPath = outPutPath;
-            output.speed = userSets.download_speed || 20;
+            output.speed = 1;
 
             await Task({ quality: ["default"] });
           } else {
+            return res.json({
+              status: "false",
+              msg: "video_error",
+              url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+              e_code: 335,
+            });
             output.msg = "no_token";
           }
         } else {
+          // update no_quality_default
+          return res.json({
+            status: "false",
+            msg: "video_error",
+            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+            e_code: 334,
+          });
           output.msg = "no_quality_default";
         }
       }
@@ -238,7 +260,7 @@ module.exports = async (req, res) => {
       await Task({ quality: ["default"] });
     }
     output.root_dir = global.dir;
-
+    output.url_cron = `http://${Sets?.domain_api_admin}/cron/download`;
     return res.json({ ...output });
   } catch (error) {
     console.log(error);

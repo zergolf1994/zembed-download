@@ -41,7 +41,9 @@ if [[ $status == "false" ]]; then
         curl -sS "http://127.0.0.1/cancle?slug=${1}"
     fi
     sleep 1
-    #curl -sS "${url_cron}"
+    if [[ $url_cron != "null" ]]; then
+        curl -sS "${url_cron}"
+    fi
     exit 1
 fi
 type=$(echo $data | jq -r ".type")
@@ -53,6 +55,10 @@ if [[ $type == "gdrive_quality_done" ]]; then
     echo "${type} done"
     sleep 2
     curl -sS "http://127.0.0.1/success-quality?slug=${1}"
+    
+    if [[ $url_cron != "null" ]]; then
+        curl -sS "${url_cron}"
+    fi
 fi
 
 if [[ $type == "gdrive_quality" ]]; then
@@ -88,6 +94,10 @@ if [[ $type == "gdrive_quality" ]]; then
     sleep 2
     curl -sS "http://127.0.0.1/success-quality?slug=${1}"
     #download quality success
+    
+    if [[ $url_cron != "null" ]]; then
+        curl -sS "${url_cron}"
+    fi
     echo "download_gdrive_quality_done"
 fi
 
@@ -107,9 +117,13 @@ if [[ $type == "gdrive_default" ]]; then
     
     curl -sS "http://${localhost}/update/task/downloading?quality=default"
     
-    axel -H "Authorization: ${Authorization}" -n 1 -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
+    axel -H "Authorization: ${Authorization}" -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
 
     curl -sS "http://${localhost}/remote?slug=${1}"
+    
+    if [[ $url_cron != "null" ]]; then
+        curl -sS "${url_cron}"
+    fi
     echo "download_${type}_done"
 fi
 
@@ -130,6 +144,10 @@ if [[ $type == "link_mp4_default" ]]; then
     curl -sS "http://${localhost}/update/task/downloading?quality=default"
 
     axel -n ${speed} -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
+    
+    if [[ $url_cron != "null" ]]; then
+        curl -sS "${url_cron}"
+    fi
     echo "download_${type}_done"
 fi
 exit 1

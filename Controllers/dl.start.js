@@ -4,12 +4,18 @@ const { Files, Servers, Process } = require(`../Models`);
 const { GetIP, getSets, Task } = require(`../Utils`);
 const { Sequelize, Op } = require("sequelize");
 const shell = require("shelljs");
+const path = require("path");
+const fs = require("fs-extra");
 
 module.exports = async (req, res) => {
   try {
     const { slug } = req.query;
 
     if (!slug) return res.json({ status: false });
+
+    if (fs.existsSync(path.join(global.dirPublic, "task.json")))
+      return res.json({ status: false, msg: "server_busy" });
+
     const sv_ip = await GetIP();
     let sets = await getSets();
 

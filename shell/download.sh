@@ -94,10 +94,11 @@ if [[ $type == "gdrive_quality" ]]; then
     sleep 2
     curl -sS "http://127.0.0.1/success-quality?slug=${1}"
     #download quality success
-    
+    sleep 2
     if [[ $url_cron != "null" ]]; then
         curl -sS "${url_cron}"
     fi
+    sleep 1
     echo "download_gdrive_quality_done"
 fi
 
@@ -121,9 +122,11 @@ if [[ $type == "gdrive_default" ]]; then
 
     curl -sS "http://${localhost}/remote?slug=${1}"
     
+    sleep 2
     if [[ $url_cron != "null" ]]; then
         curl -sS "${url_cron}"
     fi
+    sleep 1
     echo "download_${type}_done"
 fi
 
@@ -145,9 +148,13 @@ if [[ $type == "link_mp4_default" ]]; then
 
     axel -n ${speed} -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
     
+    curl -sS "http://${localhost}/remote?slug=${1}"
+    
+    sleep 2
     if [[ $url_cron != "null" ]]; then
         curl -sS "${url_cron}"
     fi
+    sleep 1
     echo "download_${type}_done"
 fi
 exit 1

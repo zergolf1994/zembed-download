@@ -13,7 +13,7 @@ do
         fi
 
         if [[ $msg == "no_file_tmp" ]]; then
-            sleep 10
+            sleep 3
         fi
         
         if [[ $msg == "download_error" ]]; then

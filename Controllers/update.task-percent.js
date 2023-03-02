@@ -2,6 +2,7 @@
 const path = require("path");
 const fs = require("fs-extra");
 
+const { Process } = require(`../Models`);
 const { Task, DownloadStatus } = require(`../Utils`);
 
 module.exports = async (req, res) => {
@@ -51,7 +52,13 @@ module.exports = async (req, res) => {
     }
 
     await Task({ percent: array_ });
-    return res.json({ status: "ok", msg: "updated", array: array_ });
+
+    await Process.update(
+      { action: JSON.stringify({ percent: array_ }) },
+      { where: { id: task?.processId } }
+    );
+
+    return res.json({ status: "ok", msg: "updated" });
   } catch (error) {
     console.log(error);
     return res.json({ status: "false", msg: error.name });

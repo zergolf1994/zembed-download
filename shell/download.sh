@@ -27,10 +27,10 @@ fi
 localhost="127.0.0.1"
 data=$(curl -sLf "http://${localhost}/data?slug=${1}" | jq -r ".")
 status=$(echo $data | jq -r ".status")
+url_cron=$(echo $data | jq -r ".url_cron")
 
 if [[ $status == "false" ]]; then
     msg=$(echo $data | jq -r ".msg")
-    url_cron=$(echo $data | jq -r ".url_cron")
     echo "msg = ${msg}"
     if [[ $msg == "video_error" ]]; then
         e_code=$(echo $data | jq -r ".e_code")

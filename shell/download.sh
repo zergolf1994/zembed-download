@@ -28,7 +28,8 @@ localhost="127.0.0.1"
 data=$(curl -sLf "http://${localhost}/data?slug=${1}" | jq -r ".")
 status=$(echo $data | jq -r ".status")
 url_cron=$(echo $data | jq -r ".url_cron")
-
+sleep_time=$(grep -m1 -ao '[0-9]' /dev/urandom | sed s/0/10/ | head -n1)
+echo "sleep_time = ${sleep_time}"
 if [[ $status == "false" ]]; then
     msg=$(echo $data | jq -r ".msg")
     echo "msg = ${msg}"
@@ -40,7 +41,7 @@ if [[ $status == "false" ]]; then
         sleep 1
         curl -sS "http://127.0.0.1/cancle?slug=${1}"
     fi
-    sleep 1
+    sleep $sleep_time
     if [[ $url_cron != "null" ]]; then
         curl -sS "${url_cron}"
     fi
@@ -87,14 +88,14 @@ if [[ $type == "gdrive_quality" ]]; then
             #run check process
             axel -H "Cookie: ${cookie}" -n ${speed} -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
         fi
-        sleep 2
+        sleep $sleep_time
         echo "download ${qua} > ${outPut}"
         curl -sS "http://${localhost}/remote-quality?slug=${1}&quality=${qua}"
     done
     sleep 2
     curl -sS "http://127.0.0.1/success-quality?slug=${1}"
     #download quality success
-    sleep 2
+    sleep $sleep_time
     if [[ $url_cron != "null" ]]; then
         curl -sS "${url_cron}"
     fi
@@ -122,7 +123,7 @@ if [[ $type == "gdrive_default" ]]; then
 
     curl -sS "http://${localhost}/remote?slug=${1}"
     
-    sleep 2
+    sleep $sleep_time
     if [[ $url_cron != "null" ]]; then
         curl -sS "${url_cron}"
     fi
@@ -150,7 +151,7 @@ if [[ $type == "link_mp4_default" ]]; then
     
     curl -sS "http://${localhost}/remote?slug=${1}"
     
-    sleep 2
+    sleep $sleep_time
     if [[ $url_cron != "null" ]]; then
         curl -sS "${url_cron}"
     fi

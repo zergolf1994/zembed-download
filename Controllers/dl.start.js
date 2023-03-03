@@ -15,14 +15,10 @@ module.exports = async (req, res) => {
 
     if (fs.existsSync(path.join(global.dirPublic, "task.json"))) {
       let check = await Task();
-      if (
-        check?.slug != undefined ||
-        check?.slug != "" ||
-        check?.slug != null
-      ) {
+      if (check?.slug != undefined) {
         return res.json({ status: false, msg: "server_busy" });
       } else {
-        fs.unlink(path.join(global.dirPublic, "task.json"));
+        fs.unlinkSync(path.join(global.dirPublic, "task.json"));
       }
     }
 

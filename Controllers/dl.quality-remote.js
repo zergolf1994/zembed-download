@@ -44,7 +44,7 @@ module.exports = async (req, res) => {
       where: {
         active: 1,
       },
-      attributes: ["id", "sv_ip", "disk_percent"],
+      attributes: ["id", "sv_ip", "disk_used", "disk_percent"],
       include: [
         {
           required: true,
@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
           },
         },
       ],
-      order: [["disk_percent", "ASC"]],
+      order: [["disk_used", "ASC"]],
     });
 
     if (!sg_db) return res.json({ status: false, msg: "storage_busy" });

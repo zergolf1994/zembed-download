@@ -13,8 +13,18 @@ module.exports = async (req, res) => {
 
     if (!slug) return res.json({ status: false });
 
-    if (fs.existsSync(path.join(global.dirPublic, "task.json")))
-      return res.json({ status: false, msg: "server_busy" });
+    if (fs.existsSync(path.join(global.dirPublic, "task.json"))) {
+      let check = await Task();
+      if (
+        check?.slug != undefined ||
+        check?.slug != "" ||
+        check?.slug != null
+      ) {
+        return res.json({ status: false, msg: "server_busy" });
+      } else {
+        fs.unlink(path.join(global.dirPublic, "task.json"));
+      }
+    }
 
     const sv_ip = await GetIP();
     let sets = await getSets();
@@ -91,4 +101,3 @@ module.exports = async (req, res) => {
     return res.json({ status: false, msg: error.name });
   }
 };
-

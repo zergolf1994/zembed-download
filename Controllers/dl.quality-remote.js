@@ -6,7 +6,7 @@ const request = require("request");
 const { Client } = require("node-scp");
 
 const { Files, Servers, Storages, Process } = require(`../Models`);
-const { Google, VideoData, getSets } = require(`../Utils`);
+const { Google, VideoData, getSets, Task } = require(`../Utils`);
 const { Sequelize, Op } = require("sequelize");
 
 module.exports = async (req, res) => {
@@ -121,86 +121,110 @@ module.exports = async (req, res) => {
 };
 
 function RemoteToStorage({ file, save, row, dir, sv_storage, vdo_data }) {
-    return new Promise(async function (resolve, reject) {
-      let sets = await getSets();
-      let server = {
-        host: sv_storage?.sv_ip,
-        port: sv_storage?.port,
-        username: sv_storage?.username,
-        password: sv_storage?.password,
-      };
-  
-      Client(server)
-        .then(async (client) => {
-          let uploadTo = save;
-          if (dir) {
-            const dir_exists = await client
-              .exists(dir)
-              .then((result) => {
-                return result;
-              })
-              .catch((error) => {
-                return false;
-              });
-  
-            if (!dir_exists) {
-              await client
-                .mkdir(dir)
-                .then((response) => {
-                  console.log("dir created", dir);
-                })
-                .catch((error) => {
-                  reject();
-                });
-            }
-            uploadTo = `${dir}/${save}`;
-          }
-  
-          await client
-            .uploadFile(file, uploadTo)
-            .then(async (response) => {
-  
-              let video = await Files.Datas.findOne({
-                raw: true,
-                where: {
-                  type: "video",
-                  name: vdo_data?.name,
-                  fileId: row?.id,
-                },
-              });
-  
-              if (video) {
-                console.log("update");
-                await Files.Datas.update(vdo_data, {
-                  where: {
-                    id: video?.id,
-                  },
-                });
-              } else {
-                console.log("create");
-                await Files.Datas.create({ ...vdo_data });
-              }
-              request(
-                { url: `http://${sv_storage?.sv_ip}/check-disk` },
-                function (error, response, body) {
-                  console.log("cron-check", sv_storage?.sv_ip);
-                }
-              );
-  
-              client.close();
-              resolve(true);
+  return new Promise(async function (resolve, reject) {
+    let task = await Task();
+    let q = task.quality;
+    let task_remote = task?.remote;
+    let data_remote = {};
+
+    for (const key in q) {
+      let data_q = task_remote[`file_${q[key]}`];
+      if (q[key] == vdo_data?.name) {
+        let new_update = {
+          quality: vdo_data?.name,
+          name: save,
+          sv_ip: sv_storage?.sv_ip,
+          upload: 0,
+          size: 0,
+        };
+        data_remote[`file_${q[key]}`] = new_update;
+      } else if (data_q != undefined) {
+        data_remote[`file_${q[key]}`] = data_q;
+      }
+    }
+
+    await Task({
+      remoting: vdo_data?.quality,
+      remote: data_remote,
+    });
+
+    let server = {
+      host: sv_storage?.sv_ip,
+      port: sv_storage?.port,
+      username: sv_storage?.username,
+      password: sv_storage?.password,
+    };
+
+    Client(server)
+      .then(async (client) => {
+        let uploadTo = save;
+        if (dir) {
+          const dir_exists = await client
+            .exists(dir)
+            .then((result) => {
+              return result;
             })
             .catch((error) => {
-              console.log("error", error);
-              client.close();
-              reject();
+              return false;
             });
-        })
-        .catch((e) => {
-          console.log("e", e);
-          client.close();
-          reject();
-        });
-    });
-  }
-  
+
+          if (!dir_exists) {
+            await client
+              .mkdir(dir)
+              .then((response) => {
+                console.log("dir created", dir);
+              })
+              .catch((error) => {
+                reject();
+              });
+          }
+          uploadTo = `${dir}/${save}`;
+        }
+
+        await client
+          .uploadFile(file, uploadTo)
+          .then(async (response) => {
+            let video = await Files.Datas.findOne({
+              raw: true,
+              where: {
+                type: "video",
+                name: vdo_data?.name,
+                fileId: row?.id,
+              },
+            });
+
+            if (video) {
+              console.log("update");
+              await Files.Datas.update(vdo_data, {
+                where: {
+                  id: video?.id,
+                },
+              });
+            } else {
+              console.log("create");
+              await Files.Datas.create({ ...vdo_data });
+            }
+
+            request(
+              { url: `http://${sv_storage?.sv_ip}/check-disk` },
+              function (error, response, body) {
+                console.log("cron-check", sv_storage?.sv_ip);
+              }
+            );
+
+            client.close();
+            resolve(true);
+          })
+          .catch((error) => {
+            console.log("error", error);
+            client.close();
+            reject();
+          });
+      })
+      .catch((e) => {
+        console.log("e", e);
+        client.close();
+        reject();
+      });
+  });
+}

@@ -6,7 +6,7 @@ const request = require("request");
 const { Client } = require("node-scp");
 
 const { Files, Servers, Storages, Process } = require(`../Models`);
-const { Google, VideoData, getSets } = require(`../Utils`);
+const { Google, VideoData, getSets, Task } = require(`../Utils`);
 const { Sequelize, Op } = require("sequelize");
 
 module.exports = async (req, res) => {
@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
     const { slug } = req.query;
     let outputPath, storageId;
 
-    if (!slug) return res.json({ status: false });
+    if (!slug) return res.json({ status: "false", msg: "no_slug" });
 
     let row = await Files.Lists.findOne({
       where: {
@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
       },
     });
 
-    if (!row) return res.json({ status: false, msg: "not_exists" });
+    if (!row) return res.json({ status: "false", msg: "not_exists" });
 
     let pc = await Process.findOne({
       raw: true,
@@ -32,15 +32,19 @@ module.exports = async (req, res) => {
       },
     });
 
-    if (!pc) return res.json({ status: false, msg: "not_exists" });
+    if (!pc) return res.json({ status: "false", msg: "not_exists" });
 
     outputPath = `${global.dirPublic}${slug}/file_default`;
 
     if (!fs.existsSync(outputPath)) {
       // cancle this video
-      return res.json({ status: false, msg: "download_error" });
+      return res.json({ status: "false", msg: "download_error", e_code: 334 });
     }
     let video_data = await VideoData(outputPath);
+    if (video_data?.error == true) {
+      return res.json({ status: "false", msg: "ffmpeg_error", e_code: 404 });
+    }
+    //console.log(video_data);
     let { size, format_name } = video_data?.format;
     let ext,
       file_update = {};
@@ -97,7 +101,7 @@ module.exports = async (req, res) => {
       order: [["disk_percent", "ASC"]],
     });
 
-    if (!sg_db) return res.json({ status: false, msg: "storage_busy" });
+    if (!sg_db) return res.json({ status: "false", msg: "storage_busy" });
     let sv_storage = {};
     sv_storage.id = sg_db?.id;
     sv_storage.sv_ip = sg_db?.sv_ip;
@@ -128,16 +132,46 @@ module.exports = async (req, res) => {
       function (data) {}
     );
 
-    return res.json({ status: true });
+    return res.json({ status: "ok", msg: "remote_done" });
   } catch (error) {
     console.log(error);
-    return res.json({ status: false, msg: error.name });
+    return res.json({ status: "false", msg: "err" });
   }
 };
 
 function RemoteToStorage({ file, save, row, dir, sv_storage }) {
   return new Promise(async function (resolve, reject) {
     let sets = await getSets();
+
+    let task = await Task();
+    let q = task.quality;
+    let task_remote = task?.remote;
+    let data_remote = {};
+    
+    for (const key in q) {
+      let data_q = task_remote[`file_${q[key]}`];
+      if (q[key] == "default") {
+        data_remote[`file_${q[key]}`] = {
+          quality: q[key],
+          name: save,
+          sv_ip: sv_storage?.sv_ip,
+          upload: 0,
+          size: 0,
+        };
+      } else {
+        data_remote[`file_${q[key]}`] = {
+          quality: data_q?.quality || q[key],
+          sv_ip: data_q?.sv_ip || "",
+          upload: data_q?.upload || 0,
+          size: data_q?.size || 0,
+        };
+      }
+    }
+    await Task({
+      remoting: "default",
+      remote: data_remote,
+    });
+
     let server = {
       host: sv_storage?.sv_ip,
       port: sv_storage?.port,
@@ -208,27 +242,12 @@ function RemoteToStorage({ file, save, row, dir, sv_storage }) {
               { e_code: 0, s_video: 1 },
               { where: { id: row?.id } }
             );
+
             // check disk
             request(
               { url: `http://${sv_storage?.sv_ip}/check-disk` },
               function (error, response, body) {
                 console.log("cron-check", sv_storage?.sv_ip);
-              }
-            );
-
-            // disk-used
-            request(
-              { url: `http://${sets?.domain_api_admin}/cron/disk-used` },
-              function (error, response, body) {
-                console.log("cron-thumbs", sets?.domain_api_admin);
-              }
-            );
-
-            // thumbs
-            request(
-              { url: `http://${sets?.domain_api_admin}/cron/thumbs` },
-              function (error, response, body) {
-                console.log("cron-thumbs", sets?.domain_api_admin);
               }
             );
 

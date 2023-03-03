@@ -6,13 +6,13 @@ module.exports = async (pathVideo) => {
     return new Promise((resolve, reject) => {
       ffmpeg(pathVideo).ffprobe((err, data) => {
         if (err) {
-          reject(err);
+          resolve({ error: true });
         }
         resolve(data);
       });
     });
   } catch (error) {
-    console.error(error);
-    return;
+    //console.error(error);
+    return { error: true };
   }
 };

@@ -17,6 +17,7 @@ module.exports = async (html) => {
       err500: /500 Internal Server Error/gm,
       err403: /403 Forbidden/gm,
       downloading: /Starting download/gm,
+      Serverunsupported: /Server unsupported,(.*?)/gm,
     };
 
     if (!html.match(regex.downloading)) {
@@ -27,6 +28,8 @@ module.exports = async (html) => {
         //เช็คว่า err
         data.err = html.match(regex.err403);
       }
+    } else if (html.match(regex.Serverunsupported)) {
+      data.err = `server_unsupported`
     } else {
       if (html.match(regex.Downloaded)) {
         //เช็คว่าโหลดเสร็จแล้ว

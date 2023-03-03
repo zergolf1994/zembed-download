@@ -69,7 +69,9 @@ module.exports = async (req, res) => {
         slug: slug,
         quality: [],
         downloading: false,
-        percent: false,
+        remoting: false,
+        download: {},
+        remote: {},
         processId: db_create?.id,
         fileId: row?.id,
       };
@@ -89,3 +91,4 @@ module.exports = async (req, res) => {
     return res.json({ status: false, msg: error.name });
   }
 };
+

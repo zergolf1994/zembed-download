@@ -4,9 +4,8 @@ do
     data=$(curl -sLf "http://${localhost}/update/task/percent" | jq -r ".")
     status=$(echo $data | jq -r ".status")
     msg=$(echo $data | jq -r ".msg")
-    echo "$i $msg"
+    
     if [[ $status == "false" ]]; then
-
         if [[ $msg == "no_file_task" ]]; then
             sleep 1
             exit 1
@@ -17,8 +16,10 @@ do
         fi
         
         if [[ $msg == "download_error" ]]; then
+            e_code=$(echo $data | jq -r ".e_code")
+            slug=$(echo $data | jq -r ".slug")
             sleep 2
-            curl -sS "http://127.0.0.1/cancle?slug=${1}"
+            curl -sS "http://${localhost}/error?slug=${slug}&e_code=${e_code}"
             exit 1
         fi
 
@@ -26,6 +27,7 @@ do
 
 
     if [[ $status == "ok" ]]; then
+        echo "update percent"
         sleep 5
     fi
 

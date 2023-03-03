@@ -89,7 +89,7 @@ if [[ $type == "gdrive_quality" ]]; then
             axel -H "Cookie: ${cookie}" -n ${speed} -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
         fi
         sleep $sleep_time
-        echo "download ${qua} > ${outPut}"
+        
         curl -sS "http://${localhost}/remote-quality?slug=${1}&quality=${qua}"
     done
     sleep 2
@@ -117,18 +117,28 @@ if [[ $type == "gdrive_default" ]]; then
         rm -rf ${DownloadTXT}
     fi
     
-    curl -sS "http://${localhost}/update/task/downloading?quality=default"
+    data_update_now=$(curl -sLf "http://${localhost}/update/task/downloading?quality=default" | jq ".")
+    #echo "data_update_now = ${data_update_now}"
     
     axel -H "Authorization: ${Authorization}" -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
 
-    curl -sS "http://${localhost}/remote?slug=${1}"
-    
-    sleep $sleep_time
-    if [[ $url_cron != "null" ]]; then
-        curl -sS "${url_cron}"
+    data_remote=$(curl -sLf "http://${localhost}/remote?slug=${1}" | jq ".")
+    remote_status=$(echo $data_remote | jq -r ".status")
+    remote_msg=$(echo $data_remote | jq -r ".msg")
+
+    if [[ $remote_msg == "download_error" || $remote_msg == "ffmpeg_error" ]]; then
+        remote_ecode=$(echo $data_remote | jq -r ".e_code")
+        update_error=$(curl -sLf "http://127.0.0.1/error?slug=${1}&e_code=${remote_ecode}" | jq ".")
+        echo "${1} ${remote_msg}"
+    else
+        echo "${1} ${remote_msg}"
+        sleep $sleep_time
+        if [[ $url_cron != "null" ]]; then
+            curl -sS "${url_cron}"
+        fi
+        sleep 1
     fi
-    sleep 1
-    echo "download_${type}_done"
+    exit 1
 fi
 
 if [[ $type == "link_mp4_default" ]]; then

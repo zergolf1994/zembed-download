@@ -42,89 +42,85 @@ module.exports = async (req, res) => {
     if (!fs.existsSync(outPutPath)) {
       fs.mkdirSync(outPutPath, { recursive: true });
     }
+    let download_backup = false;
+    if (userSets?.download_backup == "1") {
+      // find backup
+
+      let backu_data = await Files.Datas.findAll({
+        raw: true,
+        where: {
+          fileId: row?.id,
+          type: "backup",
+        },
+      });
+      
+      if (backu_data.length > 0) {
+        let gToken = await Google.GRandBackup();
+
+        if (gToken) {
+          await Process.update(
+            {
+              quality: "backup",
+            },
+            {
+              where: {
+                type: "download",
+                fileId: row?.id,
+                userId: row?.userId,
+              },
+            }
+          );
+          let quality = backu_data.map((e) => {
+            return e?.name;
+          });
+
+          let vdo = {};
+
+          for (const key in backu_data) {
+            if (Object.hasOwnProperty.call(backu_data, key)) {
+              if (backu_data[key]?.value) {
+                vdo[
+                  `file_${backu_data[key]?.name}`
+                ] = `https://www.googleapis.com/drive/v2/files/${backu_data[key]?.value}?alt=media&source=downloadUrl`;
+              }
+            }
+          }
+
+          output.status = "ok";
+          output.type = "download_backup";
+          output.quality = quality;
+          output.vdo = vdo;
+          output.authorization = `${gToken?.token_type} ${gToken?.access_token}`;
+          output.outPutPath = outPutPath;
+          output.speed = 1;
+
+          await Task({ quality: quality });
+          download_backup = true;
+        }
+      }
+    }
     //output.user = userSets;
-    if (row?.type == "gdrive") {
+    if (row?.type == "gdrive" && download_backup == false) {
       //check_default
       let gInfo = await Google.Info(row);
       //output.gInfo = gInfo;
       if (gInfo?.error) {
-        // find backup
-        let backu_data = await Files.Datas.findAll({
-          raw: true,
-          where: {
-            fileId: row?.id,
-            type: "backup",
-          },
-        });
-
-        if (!backu_data.length) {
-          let gSource = await Google.Source(row);
-          if (gSource?.error_code) {
-            let e_code = gSource?.error_code || 333;
-            return res.json({
-              status: "false",
-              msg: "video_error",
-              url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
-              e_code,
-              p: 1,
-            });
-          } else {
-            return res.json({
-              status: "false",
-              msg: "video_cancle",
-              url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
-            });
-          }
+        let gSource = await Google.Source(row);
+        if (gSource?.error_code) {
+          let e_code = gSource?.error_code || 333;
+          return res.json({
+            status: "false",
+            msg: "video_error",
+            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+            e_code,
+            p: 1,
+          });
         } else {
-          let gToken = await Google.GRandBackup();
-
-          if (gToken) {
-            await Process.update(
-              {
-                quality: "backup",
-              },
-              {
-                where: {
-                  type: "download",
-                  fileId: row?.id,
-                  userId: row?.userId,
-                },
-              }
-            );
-            let quality = backu_data.map((e) => {
-              return e?.name;
-            });
-
-            let vdo = {};
-
-            for (const key in backu_data) {
-              if (Object.hasOwnProperty.call(backu_data, key)) {
-                if (backu_data[key]?.value) {
-                  vdo[
-                    `file_${backu_data[key]?.name}`
-                  ] = `https://www.googleapis.com/drive/v2/files/${backu_data[key]?.value}?alt=media&source=downloadUrl`;
-                }
-              }
-            }
-
-            output.status = "ok";
-            output.type = "download_backup";
-            output.quality = quality;
-            output.vdo = vdo;
-            output.authorization = `${gToken?.token_type} ${gToken?.access_token}`;
-            output.outPutPath = outPutPath;
-            output.speed = 1;
-
-            await Task({ quality: quality });
-          } else {
-            return res.json({
-              status: "false",
-              msg: "video_error",
-              url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
-              e_code: 335,
-              p: 4,
-            });
-          }
+          return res.json({
+            status: "false",
+            msg: "video_cancle",
+            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+          });
         }
       }
 
@@ -291,75 +287,13 @@ module.exports = async (req, res) => {
             });
           }
         } else {
-          // find backup
-          let backu_data = await Files.Datas.findAll({
-            raw: true,
-            where: {
-              fileId: row?.id,
-              type: "backup",
-            },
+          return res.json({
+            status: "false",
+            msg: "video_error",
+            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+            e_code: 334,
+            p: 5,
           });
-
-          if (!backu_data.length) {
-            // update no_quality_default
-            return res.json({
-              status: "false",
-              msg: "video_error",
-              url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
-              e_code: 334,
-              p: 5,
-            });
-          } else {
-            let gToken = await Google.GRandBackup();
-
-            if (gToken) {
-              await Process.update(
-                {
-                  quality: "backup",
-                },
-                {
-                  where: {
-                    type: "download",
-                    fileId: row?.id,
-                    userId: row?.userId,
-                  },
-                }
-              );
-              let quality = backu_data.map((e) => {
-                return e?.name;
-              });
-
-              let vdo = {};
-
-              for (const key in backu_data) {
-                if (Object.hasOwnProperty.call(backu_data, key)) {
-                  if (backu_data[key]?.value) {
-                    vdo[
-                      `file_${backu_data[key]?.name}`
-                    ] = `https://www.googleapis.com/drive/v2/files/${backu_data[key]?.value}?alt=media&source=downloadUrl`;
-                  }
-                }
-              }
-
-              output.status = "ok";
-              output.type = "download_backup";
-              output.quality = quality;
-              output.vdo = vdo;
-              output.authorization = `${gToken?.token_type} ${gToken?.access_token}`;
-              output.outPutPath = outPutPath;
-              output.speed = 1;
-
-              await Task({ quality: quality });
-            } else {
-              return res.json({
-                status: "false",
-                msg: "video_error",
-                url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
-                e_code: 335,
-                p: 4,
-              });
-            }
-          }
         }
       }
     } else if (row?.type == "link_mp4") {

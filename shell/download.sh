@@ -131,6 +131,8 @@ if [[ $type == "gdrive_default" ]]; then
         update_error=$(curl -sLf "http://127.0.0.1/error?slug=${1}&e_code=${remote_ecode}" | jq ".")
         echo "${1} ${remote_msg}"
     else
+        sleep 1
+        curl -sS "http://127.0.0.1/success-quality?slug=${1}"
         echo "${1} ${remote_msg}"
         sleep $sleep_time
         if [[ $url_cron != "null" ]]; then
@@ -167,5 +169,56 @@ if [[ $type == "link_mp4_default" ]]; then
     fi
     sleep 1
     echo "download_${type}_done"
+fi
+
+if [[ $type == "download_backup" ]]; then
+    quality=$(echo $data | jq ".quality | to_entries | .[].value"  --raw-output)
+    outPutPath=$(echo $data | jq ".outPutPath"  --raw-output)
+    Authorization=$(echo $data | jq -r ".authorization")
+    vdo=$(echo $data | jq ".vdo")
+    speed=$(echo $data | jq ".speed")
+    
+    for qua in $quality
+    do
+        if [[ $qua == "default" ]]; then
+            outPut=${outPutPath}/file_default
+            DownloadTXT="${outPutPath}/file_default.txt"
+        else
+            outPut=${outPutPath}/file_${qua}.mp4
+            DownloadTXT="${outPutPath}/file_${qua}.txt"
+        fi
+        linkDownload=$(echo $vdo | jq -r ".file_${qua}")
+        DownloadTXT="${outPutPath}/file_${qua}.txt"
+        
+        if [[ -f "$outPut" ]]; then
+            rm -rf ${outPut}
+        fi
+        if [[ -f "$DownloadTXT" ]]; then
+            rm -rf ${DownloadTXT}
+        fi
+
+        if [ "${cookie}" != "null" ]; then
+            echo "download ${qua}"
+            curl -sS "http://${localhost}/update/task/downloading?quality=${qua}"
+            #run check process
+            axel -H "Authorization: ${Authorization}" -o "${outPut}" "${linkDownload}" >> ${DownloadTXT} 2>&1
+        fi
+        sleep $sleep_time
+        if [[ $qua == "default" ]]; then
+            echo "remote default"
+            curl -sS "http://${localhost}/remote?slug=${1}"
+        else
+            curl -sS "http://${localhost}/remote-quality?slug=${1}&quality=${qua}"
+        fi
+    done
+    sleep 2
+    curl -sS "http://127.0.0.1/success-quality?slug=${1}"
+    #download quality success
+    sleep $sleep_time
+    if [[ $url_cron != "null" ]]; then
+        curl -sS "${url_cron}"
+    fi
+    sleep 1
+    echo "download_backup_done"
 fi
 exit 1

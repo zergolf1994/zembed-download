@@ -124,14 +124,14 @@ module.exports = async (req, res) => {
       sv_storage: sv_storage,
     });
 
-    await Servers.Lists.update({ work: 0 }, { where: { id: pc?.serverId } });
+    /*await Servers.Lists.update({ work: 0 }, { where: { id: pc?.serverId } });
     await Process.destroy({ where: { id: pc?.id } });
     shell.exec(
       `sudo rm -rf ${global.dirPublic}`,
       { async: false, silent: false },
       function (data) {}
     );
-
+*/
     return res.json({ status: "ok", msg: "remote_done" });
   } catch (error) {
     console.log(error);

@@ -6,6 +6,7 @@ module.exports = {
   Servers: require("./_server"),
   Storages: require("./_storage"),
   GAuth: require("./_gauth"),
+  GAuthBackup: require("./_gauth_backup"),
   Groupdomain: require("./_groupdomain"),
   Player: require("./_player"),
   Process: require("./_process"),

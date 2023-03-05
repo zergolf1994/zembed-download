@@ -1,7 +1,7 @@
 "use strict";
 const request = require("request");
 const queryString = require("query-string");
-const { GAuth } = require(`../Models`);
+const { GAuth , GAuthBackup } = require(`../Models`);
 const { Sequelize, Op } = require("sequelize");
 
 exports.GRetoken = async ({ client_id, client_secret, refresh_token }) => {
@@ -96,7 +96,49 @@ exports.GRand = async ({ userId }) => {
     return;
   }
 };
+exports.GRandBackup = async () => {
+  try {
+    let where = {
+        active: 1,
+      },
+      row;
 
+    row = await GAuthBackup.findOne({
+      where,
+      attributes: { exclude: ["updatedAt", "createdAt"] },
+      order: [[Sequelize.literal("RAND()")]],
+    });
+
+    if (!row) return;
+    const date_token = new Date(row?.retokenAt);
+    const timenow = Math.floor(Date.now() / 1000);
+    const timetoken = Math.floor(date_token.getTime() / 1000);
+
+    let token = JSON.parse(row?.token);
+
+    if (timenow - timetoken > 3500) {
+      token = await this.GRetoken(row);
+
+      let data = {};
+      if (token?.error) {
+        token = "";
+        data.active = 0;
+      } else {
+        data.token = JSON.stringify(token);
+        data.retokenAt = new Date();
+      }
+
+      await GAuthBackup.update(data, {
+        where: { id: row?.id },
+      });
+    }
+
+    return token;
+  } catch (error) {
+    console.error(error);
+    return;
+  }
+};
 exports.Source = async (file) => {
   try {
     if (!file) return;

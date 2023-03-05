@@ -48,21 +48,83 @@ module.exports = async (req, res) => {
       let gInfo = await Google.Info(row);
       //output.gInfo = gInfo;
       if (gInfo?.error) {
-        let gSource = await Google.Source(row);
-        if (gSource?.error_code) {
-          let e_code = gSource?.error_code || 333;
-          return res.json({
-            status: "false",
-            msg: "video_error",
-            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
-            e_code,
-          });
+        // find backup
+        let backu_data = await Files.Datas.findAll({
+          raw: true,
+          where: {
+            fileId: row?.id,
+            type: "backup",
+          },
+        });
+
+        if (!backu_data.length) {
+          let gSource = await Google.Source(row);
+          if (gSource?.error_code) {
+            let e_code = gSource?.error_code || 333;
+            return res.json({
+              status: "false",
+              msg: "video_error",
+              url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+              e_code,
+              p: 1,
+            });
+          } else {
+            return res.json({
+              status: "false",
+              msg: "video_cancle",
+              url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+            });
+          }
         } else {
-          return res.json({
-            status: "false",
-            msg: "video_cancle",
-            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
-          });
+          let gToken = await Google.GRandBackup();
+
+          if (gToken) {
+            await Process.update(
+              {
+                quality: "backup",
+              },
+              {
+                where: {
+                  type: "download",
+                  fileId: row?.id,
+                  userId: row?.userId,
+                },
+              }
+            );
+            let quality = backu_data.map((e) => {
+              return e?.name;
+            });
+
+            let vdo = {};
+
+            for (const key in backu_data) {
+              if (Object.hasOwnProperty.call(backu_data, key)) {
+                if (backu_data[key]?.value) {
+                  vdo[
+                    `file_${backu_data[key]?.name}`
+                  ] = `https://www.googleapis.com/drive/v2/files/${backu_data[key]?.value}?alt=media&source=downloadUrl`;
+                }
+              }
+            }
+
+            output.status = "ok";
+            output.type = "download_backup";
+            output.quality = quality;
+            output.vdo = vdo;
+            output.authorization = `${gToken?.token_type} ${gToken?.access_token}`;
+            output.outPutPath = outPutPath;
+            output.speed = 1;
+
+            await Task({ quality: quality });
+          } else {
+            return res.json({
+              status: "false",
+              msg: "video_error",
+              url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+              e_code: 335,
+              p: 4,
+            });
+          }
         }
       }
 
@@ -131,6 +193,7 @@ module.exports = async (req, res) => {
                 msg: "video_error",
                 url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
                 e_code,
+                p: 2,
               });
             }
           }
@@ -162,6 +225,7 @@ module.exports = async (req, res) => {
                 msg: "video_error",
                 url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
                 e_code: 336,
+                p: 3,
               });
               output.msg = "no_cookie";
             } else {
@@ -223,18 +287,79 @@ module.exports = async (req, res) => {
               msg: "video_error",
               url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
               e_code: 335,
+              p: 4,
             });
-            output.msg = "no_token";
           }
         } else {
-          // update no_quality_default
-          return res.json({
-            status: "false",
-            msg: "video_error",
-            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
-            e_code: 334,
+          // find backup
+          let backu_data = await Files.Datas.findAll({
+            raw: true,
+            where: {
+              fileId: row?.id,
+              type: "backup",
+            },
           });
-          output.msg = "no_quality_default";
+
+          if (!backu_data.length) {
+            // update no_quality_default
+            return res.json({
+              status: "false",
+              msg: "video_error",
+              url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+              e_code: 334,
+              p: 5,
+            });
+          } else {
+            let gToken = await Google.GRandBackup();
+
+            if (gToken) {
+              await Process.update(
+                {
+                  quality: "backup",
+                },
+                {
+                  where: {
+                    type: "download",
+                    fileId: row?.id,
+                    userId: row?.userId,
+                  },
+                }
+              );
+              let quality = backu_data.map((e) => {
+                return e?.name;
+              });
+
+              let vdo = {};
+
+              for (const key in backu_data) {
+                if (Object.hasOwnProperty.call(backu_data, key)) {
+                  if (backu_data[key]?.value) {
+                    vdo[
+                      `file_${backu_data[key]?.name}`
+                    ] = `https://www.googleapis.com/drive/v2/files/${backu_data[key]?.value}?alt=media&source=downloadUrl`;
+                  }
+                }
+              }
+
+              output.status = "ok";
+              output.type = "download_backup";
+              output.quality = quality;
+              output.vdo = vdo;
+              output.authorization = `${gToken?.token_type} ${gToken?.access_token}`;
+              output.outPutPath = outPutPath;
+              output.speed = 1;
+
+              await Task({ quality: quality });
+            } else {
+              return res.json({
+                status: "false",
+                msg: "video_error",
+                url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+                e_code: 335,
+                p: 4,
+              });
+            }
+          }
         }
       }
     } else if (row?.type == "link_mp4") {

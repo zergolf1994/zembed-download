@@ -42,7 +42,6 @@ module.exports = async (req, res) => {
         slug,
         type: { [Op.or]: ["gdrive", "linkmp4"] },
         e_code: 0,
-        s_video: 0,
       },
     });
     if (!row) return res.json({ status: false, msg: "not_exists" });

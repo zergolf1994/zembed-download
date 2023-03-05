@@ -57,7 +57,7 @@ module.exports = async (req, res) => {
         }
       }
     }
-    let pc_quality = pc?.quality.split(',');
+    let pc_quality = pc?.quality.split(",");
     let check_done = 0;
     for (const key in list_video) {
       let q = list_video[key].name;
@@ -66,7 +66,7 @@ module.exports = async (req, res) => {
       }
     }
 
-    if (list_delete.length) {
+    if (list_delete.length && list_video.length > 1) {
       //delete by scp
       await DeleteFileStorage({
         data: list_delete[0],
@@ -75,12 +75,12 @@ module.exports = async (req, res) => {
       });
     }
 
-    if(pc_quality.length == check_done){
+    if (pc_quality.length == check_done) {
       await Files.Lists.update(
         { e_code: 0, s_convert: 1, s_video: 1 },
         { where: { id: pc?.fileId } }
       );
-    }else{
+    } else {
       await Files.Lists.update(
         { e_code: 222, s_convert: 0, s_video: 1 },
         { where: { id: pc?.fileId } }

@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
       raw: true,
       where: {
         slug,
-        type: { [Op.or]: ["gdrive", "linkmp4"] },
+        type: { [Op.or]: ["gdrive", "linkmp4", "upload"] },
         e_code: 0,
       },
     });

@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
       raw: true,
       where: {
         slug,
-        type: { [Op.or]: ["gdrive", "link_mp4"] },
+        type: { [Op.or]: ["gdrive", "link_mp4", "upload"] },
       },
     });
     if (!row) return res.json({ status: "false", msg: "not_exists" });

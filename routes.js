@@ -16,6 +16,7 @@ router.route("/error").get(Control.DL.Error);
 router.route("/download").get(Control.DL.Download);
 router.route("/remote").get(Control.DL.Remote);
 router.route("/task").get(Control.DL.Task);
+router.route("/task/delete").get(Control.DEL.TASK);
 
 router.route("/update/task/downloading").get(Control.UPTASK.Downloading);
 router.route("/update/task/percent").get(Control.UPTASK.Percent);

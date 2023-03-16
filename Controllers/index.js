@@ -18,4 +18,7 @@ module.exports = {
     Downloading: require("./update.task-downloading"),
     Percent: require("./update.task-percent"),
   },
+  DEL: {
+    TASK: require("./delete.task"),
+  },
 };

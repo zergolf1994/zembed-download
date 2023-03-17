@@ -111,7 +111,7 @@ module.exports = async (req, res) => {
           return res.json({
             status: "false",
             msg: "video_error",
-            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+           // url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
             e_code,
             p: 1,
           });
@@ -119,7 +119,7 @@ module.exports = async (req, res) => {
           return res.json({
             status: "false",
             msg: "video_cancle",
-            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+           // url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
           });
         }
       }
@@ -187,7 +187,7 @@ module.exports = async (req, res) => {
               return res.json({
                 status: "false",
                 msg: "video_error",
-                url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+                //url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
                 e_code,
                 p: 2,
               });
@@ -219,7 +219,7 @@ module.exports = async (req, res) => {
               return res.json({
                 status: "false",
                 msg: "video_error",
-                url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+                //url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
                 e_code: 336,
                 p: 3,
               });
@@ -281,7 +281,7 @@ module.exports = async (req, res) => {
             return res.json({
               status: "false",
               msg: "video_error",
-              url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+              //url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
               e_code: 335,
               p: 4,
             });
@@ -290,7 +290,7 @@ module.exports = async (req, res) => {
           return res.json({
             status: "false",
             msg: "video_error",
-            url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
+           // url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
             e_code: 334,
             p: 5,
           });
@@ -319,7 +319,7 @@ module.exports = async (req, res) => {
       await Task({ quality: ["default"] });
     }
     output.root_dir = global.dir;
-    output.url_cron = `http://${Sets?.domain_api_admin}/cron/download`;
+    //output.url_cron = `http://${Sets?.domain_api_admin}/cron/download`;
     return res.json({ ...output });
   } catch (error) {
     console.log(error);

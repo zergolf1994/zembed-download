@@ -115,13 +115,13 @@ module.exports = async (req, res) => {
             e_code,
             p: 1,
           });
-        } else {
+        }/* else {
           return res.json({
             status: "false",
             msg: "video_cancle",
            // url_cron: `http://${Sets?.domain_api_admin}/cron/download`,
           });
-        }
+        }*/
       }
 
       if (row?.duration == 0 || row?.size == 0) {
@@ -139,7 +139,7 @@ module.exports = async (req, res) => {
         });
       }
 
-      if (gInfo?.videoMediaMetadata) {
+      //if (gInfo?.videoMediaMetadata) {
         let quality_allow = [];
         // set allow
         for (const key in userSets) {
@@ -249,7 +249,7 @@ module.exports = async (req, res) => {
             }
           }
         }
-      }
+      //}
 
       if (output.status == "false" && gInfo.kind == "drive#file") {
         //download default

@@ -1,6 +1,6 @@
 "use strict";
 
-const { Google, Allow } = require(`../../Utils`);
+const { Google, Allow } = require(`../Utils`);
 
 module.exports = async (req, res) => {
   try {

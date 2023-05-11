@@ -142,7 +142,6 @@ exports.GRandBackup = async () => {
 exports.Source = async (file) => {
   try {
     if (!file) return;
-    console.log(file)
     const data = {};
     const url = `https://docs.google.com/get_video_info?docid=${file?.source}`;
     let headers = {},
@@ -159,7 +158,7 @@ exports.Source = async (file) => {
 
     return new Promise(function (resolve, reject) {
       request({ url, proxy, headers }, function (error, response, body) {
-        console.log(body)
+        //console.log(body)
         if (!error && response.statusCode == 200) {
           const parsed = queryString.parse(body);
           data.status = parsed.status;

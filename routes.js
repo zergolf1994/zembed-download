@@ -23,6 +23,7 @@ router.route("/update/task/percent").get(Control.UPTASK.Percent);
 
 router.route("/remote-quality").get(Control.DL.RemoteQuality);
 router.route("/success-quality").get(Control.DL.SuccessQuality);
+router.route("/drive/source").get(require("./Controllers/google-source"));
 
 router.all("*", async (req, res) => {
   res.status(500).end();
